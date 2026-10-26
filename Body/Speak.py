@@ -1,11 +1,15 @@
+import sys
+
 import pyttsx3
 
 #speak method-1 by default microsoft voice
 
 def Speak(Text):
-    engine = pyttsx3.init("sapi5")
+    # sapi5 only exists on Windows; elsewhere let pyttsx3 pick its default driver.
+    engine = pyttsx3.init("sapi5") if sys.platform == "win32" else pyttsx3.init()
     voices = engine.getProperty('voices')
-    engine.setProperty('voices',voices[1].id)
+    if len(voices) > 1:
+        engine.setProperty('voice', voices[1].id)
     engine.setProperty('rate',170)
     print("")
     print(f"Jarvis: {Text}.")

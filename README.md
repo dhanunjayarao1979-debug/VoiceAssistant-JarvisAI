@@ -65,7 +65,9 @@ Before you can run J.A.R.V.I.S. AI, you'll need to have the following installed 
       ```
       - Extract the chromedriver.exe from the folder and paste it in the Database Folder.
 
-      - Now, navigate to the Data Folder and in Api.txt, paste your OpenAI API Key 🔑
+      - Now, navigate to the Data Folder and in Api.txt, paste your OpenAI API Key 🔑 (or set the `OPENAI_API_KEY` environment variable / a `.env` file). The chat model defaults to `gpt-4o-mini`; set `OPENAI_MODEL` to use another one.
+
+      - Use Python 3.11 or older (the pinned `numpy` / `torch` versions need it). On Linux/macOS, install a `chromedriver` that matches your Chrome and put it on your PATH; the bundled `chromedriver.exe` is Windows-only.
 
       - At last, go to the SocialMedia folder and open Whatsapp.py. In Line no. 28, there is a Dict. named with ListWeb. Replace the name and there WhatsApp contact number 📱
 

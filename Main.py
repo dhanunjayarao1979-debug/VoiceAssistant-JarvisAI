@@ -4,12 +4,24 @@ from torch.utils.data import Dataset,DataLoader
 import torch.nn as nn
 import json
 import torch
-import numpy as np 
+import numpy as np
+import os
 import random
 
+from Config import data_path, db_path
 from SocialMedia.Whatsapp import WhatsappSender
 from Features.Open import OpenExe
-nltk.download('punkt')
+
+TASKS_MODEL_FILE = db_path("Tasks.pth")
+TASKS_INTENTS_FILE = data_path("Tasks.json")
+
+
+def _ensure_punkt():
+    """Download the NLTK tokenizer data once, only if it is not already installed."""
+    try:
+        nltk.data.find('tokenizers/punkt')
+    except LookupError:
+        _ensure_punkt()
 
 
 def TrainTasks():
@@ -49,7 +61,9 @@ def TrainTasks():
 
         return bag
 
-    with open("Data\\Tasks.json",'r') as f:
+    _ensure_punkt()
+
+    with open(TASKS_INTENTS_FILE,'r') as f:
         intents = json.load(f)
 
     all_words = []
@@ -141,13 +155,16 @@ def TrainTasks():
     "tags":tags
     }
 
-    FILE = "DataBase\\Tasks.pth"
+    FILE = TASKS_MODEL_FILE
     torch.save(data,FILE)
 
     print(f"Training Complete, File Saved To {FILE}")
     print("             ")
 
-TrainTasks()
+# Train only when there is no saved model (delete DataBase/Tasks.pth to retrain,
+# e.g. after editing Data/Tasks.json).
+if not os.path.exists(TASKS_MODEL_FILE):
+    TrainTasks()
 
 def TasksExecutor(query):
 
@@ -170,10 +187,12 @@ def TasksExecutor(query):
 
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
-    with open('Data\\Tasks.json','r') as json_data:
+    _ensure_punkt()
+
+    with open(TASKS_INTENTS_FILE,'r') as json_data:
         intents = json.load(json_data)
 
-    FILE = "DataBase\\Tasks.pth"
+    FILE = TASKS_MODEL_FILE
     data = torch.load(FILE)
 
     input_size = data["input_size"]

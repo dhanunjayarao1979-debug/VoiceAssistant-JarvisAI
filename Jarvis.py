@@ -54,5 +54,5 @@ def Wakeup():
         pass
     
     
-Wakeup()
-    
+if __name__ == "__main__":
+    Wakeup()

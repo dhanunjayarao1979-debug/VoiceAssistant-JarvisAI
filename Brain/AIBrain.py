@@ -1,68 +1,55 @@
-#API Key
+from Brain.llm import ask
+from Config import db_path
 
-fileopen = open("Data\\Api.txt")
-API = fileopen.read()
-fileopen.close()
+SYSTEM_PROMPT = (
+    "You are Jarvis, a helpful, concise voice assistant. "
+    "Your replies are spoken aloud, so keep them short and conversational."
+)
+FALLBACK_REPLY = "Sorry sir, I could not reach my brain right now."
 
-# Importing
-import openai
-from dotenv import load_dotenv
 
-#Coding
+def ReplyBrain(question, chat_file=None):
+    chat_file = chat_file or db_path("chat_log.txt")
 
-api_key = API  
-
-def ReplyBrain(question, chat_file="DataBase\\chat_log.txt"):
-    
     chat_log = load_chat(chat_file)
-    
     chat_log.append(f"You: {question}")
 
-    response = generate_response(chat_log)
-    
-    response = response.replace("Jarvis:", "").strip()
-    
-   
-    chat_log.append(f"Jarvis: {response}")
+    try:
+        response = generate_response(chat_log)
+    except Exception as e:
+        print(f"[AIBrain] {e}")
+        return FALLBACK_REPLY
 
+    response = response.replace("Jarvis:", "").strip()
+
+    chat_log.append(f"Jarvis: {response}")
     save_chat(chat_log, chat_file)
-    
+
     return response
-    
+
 
 def load_chat(chat_file):
     try:
         with open(chat_file, "r") as file:
-            chat_log = file.read().splitlines()
-        return chat_log
+            return file.read().splitlines()
     except FileNotFoundError:
         return []
+
 
 def save_chat(chat_log, chat_file):
     with open(chat_file, "w") as file:
         for line in chat_log:
             file.write(line + "\n")
 
+
 def generate_response(chat_log):
-    prompt = "\n".join(chat_log)
-
-   
-    openai.api_key = api_key
-    response = openai.Completion.create(
-        engine="text-davinci-003",  
-        prompt=prompt,
-        max_tokens=60,
-        temperature = 0.5,
-        top_p = 0.3,
-        frequency_penalty = 0.5,
-        presence_penalty =0
+    return ask(
+        SYSTEM_PROMPT,
+        chat_log,
+        user_prefix="You:",
+        assistant_prefix="Jarvis:",
+        max_tokens=150,
+        temperature=0.5,
+        top_p=0.3,
+        frequency_penalty=0.5,
     )
-   
-    return response.choices[0].text
-
-# Example usage
-# if __name__ == "__main__":
-#     while True:
-#         user_input = input("You: ")
-#         response = ReplyBrain(user_input)
-#         print(response)
